@@ -39,7 +39,7 @@ to go
     let do-nothing obj-function breed alpha zeta ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
     if max_eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
       ifelse max_eval_index < outdegree [ ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
-        ask out-request-to item max_eval_index targets [die] ;;address this
+        ask out-request-to item max_eval_index targets [die]
       ]
       [ ;send a request
         create-request-to item max_eval_index targets

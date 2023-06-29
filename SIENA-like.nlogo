@@ -3,7 +3,7 @@ extensions [nw] ;network extension
 directed-link-breed [requests request] ;advice requests
 
 ;types of agents, will have different objective functions (names need to be changed)
-breed [satisficers satisficer]
+breed [satisficers satisficer] 
 breed [networkers networker]
 
 turtles-own [ ;common attributes of both types (we might just use one or two, it depends) ;we might also use breed-own, with breed-specific attributes
@@ -16,14 +16,14 @@ to setup
   reset-ticks
   create-networkers number-networkers [ ;slider in GUI
     set shape "person"
-    set color green
+    set color green 
     ;can be uploaded from .csv file
     set gender one-of [0 1]
-    set seniority random-poisson 10
+    set seniority random-poisson 5
   ]
   create-satisficers N - number-networkers [ ;N from input widget in GUI
     set shape "person"
-    set color yellow
+    set color yellow 
     ;can be uploaded from .csv file
     set gender one-of [0 1]
     set seniority random-poisson 30
@@ -35,14 +35,14 @@ to go
     let evaluation evaluation-of-alternatives breed ;the first **length my-existing-requests** values refer to the ObjFun when withdrawing a request, the others when sending a new request
     let max_eval max evaluation
     let max_eval_index position max_eval evaluation ;it's the index where ObjFun is max
-    let targets reduce sentence (list my-existing-requests my-potential-requests) ;first **length my-existing-requests** are the [who]_s of those that are to be removed
+    let targets reduce sentence (list my-existing-requests my-potential-requests) ;first **length my-existing-requests** are the [who]_s of those that are to be removed 
     let do-nothing obj-function breed alpha zeta ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
     if max_eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
       ifelse max_eval_index < outdegree [ ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
-        ask request who item max_eval_index targets [die]
+        ask out-request-to item max_eval_index targets [die] ;;address this
       ]
       [ ;send a request
-        create-request-to turtle item max_eval_index targets
+        create-request-to item max_eval_index targets
       ]
     ] ;end outer if statement (i.e., whether max_eval > do-nothing or not)
   ]
@@ -54,41 +54,41 @@ to go
 end
 
 to-report evaluation-of-alternatives [breed-agent]
-  report reduce sentence (list map [to-consider-removing -> remove? to-consider-removing breed-agent] my-existing-requests (map [to-consider-adding -> add? to-consider-adding breed-agent] my-potential-requests))
+  report reduce sentence (list map [agent-to-remove -> remove? agent-to-remove breed-agent] my-existing-requests (map [agent-to-add -> add? agent-to-add breed-agent] my-potential-requests))
 end
 
-to-report my-existing-requests
-  report sort [who] of out-request-neighbors
+to-report my-existing-requests ;sorting is needed
+  report sort out-request-neighbors
 end
 
-to-report remove? [to-consider-removing breed-agent] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
-  ask request who to-consider-removing [die]
+to-report remove? [agent-to-remove breed-agent] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
+  ask out-request-to agent-to-remove [die]  
   let val obj-function breed-agent alpha zeta
-  create-request-to turtle to-consider-removing
+  create-request-to agent-to-remove
   report val
 end
 
 to-report my-potential-requests
-  report sort filter [agent -> not member? agent my-existing-requests] [who] of other turtles
+  report filter [agent -> not member? agent my-existing-requests] sort other turtles
 end
 
-to-report add? [to-consider-adding breed-agent] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
-  create-request-to turtle to-consider-adding
+to-report add? [agent-to-add breed-agent] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
+  create-request-to agent-to-add
   let val obj-function breed-agent alpha zeta
-  ask request who to-consider-adding [die]
+  ask out-request-to agent-to-add [die]
   report val
 end
 
 to-report obj-function [breed-agent shape-gamma scale-gamma]
   ifelse breed-agent = networkers [
-    report outdegree * beta_outdeg_net + reciprocity * beta_rec_net + transitivity * beta_trans_net + random-gamma alpha zeta
+    report outdegree * beta_outdeg_net + reciprocity * beta_rec_net + transitivity * beta_trans_net + random-gamma alpha zeta 
   ]
   [ ;if satisficer
     report outdegree * beta_outdeg_sat + beta_hom1_sat * (homophily attr) + beta_attract_seniority * seniority_receiver + random-gamma alpha zeta
   ]
 end
 
-;network effects
+;network effects 
 
 to-report outdegree
   report count out-request-neighbors
@@ -106,15 +106,16 @@ to-report seniority_receiver
   report sum [seniority] of out-request-neighbors
 end
 
-to-report transitivity
+to-report transitivity 
   ifelse outdegree > 0 [
-    let neigh_of_neigh reduce sentence (map[my_neigh -> [who] of [out-request-neighbors] of turtle my_neigh] my-existing-requests)
+    let neigh_of_neigh reduce sentence (map[my_neigh -> [self] of [out-request-neighbors] of my_neigh] my-existing-requests)
     report length filter [agent -> member? agent my-existing-requests] neigh_of_neigh
   ]
   [
     report 0
   ]
 end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 705

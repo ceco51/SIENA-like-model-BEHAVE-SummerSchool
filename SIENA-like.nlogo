@@ -3,7 +3,7 @@ extensions [nw] ;network extension
 directed-link-breed [requests request] ;advice requests
 
 ;types of agents, will have different objective functions (names need to be changed)
-breed [satisficers satisficer] 
+breed [satisficers satisficer]
 breed [networkers networker]
 
 turtles-own [ ;common attributes of both types (we might just use one or two, it depends) ;we might also use breed-own, with breed-specific attributes
@@ -13,21 +13,14 @@ turtles-own [ ;common attributes of both types (we might just use one or two, it
 
 to setup
   clear-all
+  create-networkers n-agents * prop-networkers [ set color green ]
+  create-satisficers n-agents - count networkers [ set color yellow ]
+  ask turtles [
+    set shape "person"
+    set gender one-of [0 1] ;can be uploaded from .csv file
+    set seniority random-poisson ifelse-value is-networker? self [10] [30]
+  ]
   reset-ticks
-  create-networkers number-networkers [ ;slider in GUI
-    set shape "person"
-    set color green 
-    ;can be uploaded from .csv file
-    set gender one-of [0 1]
-    set seniority random-poisson 5
-  ]
-  create-satisficers N - number-networkers [ ;N from input widget in GUI
-    set shape "person"
-    set color yellow 
-    ;can be uploaded from .csv file
-    set gender one-of [0 1]
-    set seniority random-poisson 30
-  ]
 end
 
 to go
@@ -35,7 +28,7 @@ to go
     let evaluation evaluation-of-alternatives breed ;the first **length my-existing-requests** values refer to the ObjFun when withdrawing a request, the others when sending a new request
     let max_eval max evaluation
     let max_eval_index position max_eval evaluation ;it's the index where ObjFun is max
-    let targets reduce sentence (list my-existing-requests my-potential-requests) ;first **length my-existing-requests** are the [who]_s of those that are to be removed 
+    let targets reduce sentence (list my-existing-requests my-potential-requests) ;first **length my-existing-requests** are the [who]_s of those that are to be removed
     let do-nothing obj-function breed alpha zeta ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
     if max_eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
       ifelse max_eval_index < outdegree [ ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
@@ -62,7 +55,7 @@ to-report my-existing-requests ;sorting is needed
 end
 
 to-report remove? [agent-to-remove breed-agent] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
-  ask out-request-to agent-to-remove [die]  
+  ask out-request-to agent-to-remove [die]
   let val obj-function breed-agent alpha zeta
   create-request-to agent-to-remove
   report val
@@ -81,14 +74,14 @@ end
 
 to-report obj-function [breed-agent shape-gamma scale-gamma]
   ifelse breed-agent = networkers [
-    report outdegree * beta_outdeg_net + reciprocity * beta_rec_net + transitivity * beta_trans_net + random-gamma alpha zeta 
+    report outdegree * beta_outdeg_net + reciprocity * beta_rec_net + transitivity * beta_trans_net + random-gamma alpha zeta
   ]
   [ ;if satisficer
     report outdegree * beta_outdeg_sat + beta_hom1_sat * (homophily attr) + beta_attract_seniority * seniority_receiver + random-gamma alpha zeta
   ]
 end
 
-;network effects 
+;network effects
 
 to-report outdegree
   report count out-request-neighbors
@@ -106,7 +99,7 @@ to-report seniority_receiver
   report sum [seniority] of out-request-neighbors
 end
 
-to-report transitivity 
+to-report transitivity
   ifelse outdegree > 0 [
     let neigh_of_neigh reduce sentence (map[my_neigh -> [self] of [out-request-neighbors] of my_neigh] my-existing-requests)
     report length filter [agent -> member? agent my-existing-requests] neigh_of_neigh
@@ -115,7 +108,6 @@ to-report transitivity
     report 0
   ]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 705
@@ -149,7 +141,7 @@ INPUTBOX
 61
 61
 121
-N
+n-agents
 40.0
 1
 0
@@ -211,12 +203,12 @@ SLIDER
 81
 243
 114
-number-networkers
-number-networkers
+prop-networkers
+prop-networkers
 0
-N
-11.0
 1
+0.5
+0.05
 1
 NIL
 HORIZONTAL
@@ -313,7 +305,7 @@ MONITOR
 512
 65
 possible-number-links
-N * (N - 1)
+n-agents * (n-agents - 1)
 17
 1
 11
@@ -371,6 +363,64 @@ gender
 1
 0
 String
+
+PLOT
+23
+541
+223
+691
+seniority (networkers)
+NIL
+NIL
+0.0
+15.0
+0.0
+15.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "histogram [seniority] of networkers"
+
+PLOT
+251
+544
+451
+694
+seniority (satisficers)
+NIL
+NIL
+0.0
+50.0
+0.0
+15.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "histogram [seniority] of satisficers"
+
+MONITOR
+91
+477
+212
+522
+# of networkers
+count networkers
+17
+1
+11
+
+MONITOR
+330
+488
+434
+533
+# of satisficers
+count satisficers
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?

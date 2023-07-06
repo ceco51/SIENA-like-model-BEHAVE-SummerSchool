@@ -29,7 +29,7 @@ to go
     let max_eval max evaluation
     let max_eval_index position max_eval evaluation ;it's the index where ObjFun is max
     let targets reduce sentence (list my-existing-requests my-potential-requests) ;first **length my-existing-requests** are the [who]_s of those that are to be removed
-    let do-nothing obj-function breed alpha zeta ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
+    let do-nothing objective-function breed alpha zeta ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
     if max_eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
       ifelse max_eval_index < outdegree [ ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
         ask out-request-to item max_eval_index targets [die]
@@ -55,8 +55,8 @@ to-report my-existing-requests ;sorting is needed
 end
 
 to-report remove? [agent-to-remove breed-agent] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
-  ask out-request-to agent-to-remove [die]
-  let val obj-function breed-agent alpha zeta
+  ask out-request-to agent-to-remove [ die ]
+  let val objective-function breed-agent alpha zeta
   create-request-to agent-to-remove
   report val
 end
@@ -67,18 +67,15 @@ end
 
 to-report add? [agent-to-add breed-agent] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
   create-request-to agent-to-add
-  let val obj-function breed-agent alpha zeta
+  let val objective-function breed-agent alpha zeta
   ask out-request-to agent-to-add [die]
   report val
 end
 
-to-report obj-function [breed-agent shape-gamma scale-gamma]
-  ifelse breed-agent = networkers [
-    report outdegree * beta_outdeg_net + reciprocity * beta_rec_net + transitivity * beta_trans_net + random-gamma alpha zeta
-  ]
-  [ ;if satisficer
-    report outdegree * beta_outdeg_sat + beta_hom1_sat * (homophily attr) + beta_attract_seniority * seniority_receiver + random-gamma alpha zeta
-  ]
+to-report objective-function [breed-agent shape-gamma scale-gamma]
+  ifelse breed-agent = networkers
+  [ report outdegree * beta_outdeg_net + reciprocity * beta_rec_net + transitivity * beta_trans_net + random-gamma alpha zeta ]
+  [ report outdegree * beta_outdeg_sat + beta_hom_sat * (homophily homophily-attribute) + beta_attract_seniority * seniority_receiver + random-gamma alpha zeta ]
 end
 
 ;network effects
@@ -282,7 +279,7 @@ INPUTBOX
 241
 102
 301
-beta_hom1_sat
+beta_hom_sat
 0.4
 1
 0
@@ -358,7 +355,7 @@ INPUTBOX
 377
 92
 437
-attr
+homophily-attribute
 gender
 1
 0

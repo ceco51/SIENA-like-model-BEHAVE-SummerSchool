@@ -13,7 +13,7 @@ turtles-own [ ;common attributes of both types (we might just use one or two, it
 
 to setup
   clear-all
-  create-networkers n-agents * prop-networkers [ set color green ]
+  create-networkers round n-agents * prop-networkers [ set color green ]
   create-satisficers n-agents - count networkers [ set color yellow ]
   ask turtles [
     set gender one-of [0 1] ;can be uploaded from .csv file
@@ -79,8 +79,8 @@ end
 
 to-report objective-function [breed-agent]
   let preferences ifelse-value breed-agent = networkers
-   [ beta_outdeg_net * outdegree + beta_rec_net * reciprocity + beta_trans_net * transitivity ]
-   [ beta_outdeg_sat * outdegree + beta_hom_sat * (homophily homophily-attribute) + beta_attract_seniority * seniority-advisors ]
+   [ beta-outdeg-net * outdegree + beta-rec-net * reciprocity + beta-trans-net * transitivity ]
+   [ beta-outdeg-sat * outdegree + beta-hom-sat * (homophily homophily-attribute) + beta-attract-seniority * seniority-advisors ]
   report preferences + random-gamma alpha zeta
 end
 
@@ -220,7 +220,7 @@ INPUTBOX
 168
 107
 228
-beta_outdeg_sat
+beta-outdeg-sat
 -1.1
 1
 0
@@ -251,7 +251,7 @@ INPUTBOX
 167
 291
 227
-beta_outdeg_net
+beta-outdeg-net
 -1.0
 1
 0
@@ -262,7 +262,7 @@ INPUTBOX
 239
 274
 299
-beta_rec_net
+beta-rec-net
 0.8
 1
 0
@@ -273,7 +273,7 @@ INPUTBOX
 312
 279
 372
-beta_trans_net
+beta-trans-net
 0.35
 1
 0
@@ -284,7 +284,7 @@ INPUTBOX
 241
 102
 301
-beta_hom_sat
+beta-hom-sat
 0.4
 1
 0
@@ -349,7 +349,7 @@ INPUTBOX
 309
 132
 369
-beta_attract_seniority
+beta-attract-seniority
 0.008
 1
 0

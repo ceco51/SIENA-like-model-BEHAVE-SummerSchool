@@ -3,7 +3,7 @@ extensions [nw] ;network extension
 directed-link-breed [requests request] ;advice requests
 
 ;types of agents, will have different objective functions (names need to be changed)
-breed [satisficers satisficer] 
+breed [satisficers satisficer]
 breed [networkers networker]
 
 turtles-own [ ;common attributes of both types (we might just use one or two, it depends) ;we might also use breed-own, with breed-specific attributes
@@ -13,114 +13,108 @@ turtles-own [ ;common attributes of both types (we might just use one or two, it
 
 to setup
   clear-all
+  create-networkers n-agents * prop-networkers [ set color green ]
+  create-satisficers n-agents - count networkers [ set color yellow ]
+  ask turtles [
+    set gender one-of [0 1] ;can be uploaded from .csv file
+    set seniority random-poisson ifelse-value is-networker? self [10] [30]
+    set shape ifelse-value gender = 0 ["circle"] ["square"]
+    set size sqrt(seniority / 20)
+    setxy random-xcor random-ycor
+  ]
   reset-ticks
-  create-networkers number-networkers [ ;slider in GUI
-    set shape "person"
-    set color green 
-    ;can be uploaded from .csv file
-    set gender one-of [0 1]
-    set seniority random-poisson 5
-  ]
-  create-satisficers N - number-networkers [ ;N from input widget in GUI
-    set shape "person"
-    set color yellow 
-    ;can be uploaded from .csv file
-    set gender one-of [0 1]
-    set seniority random-poisson 30
-  ]
 end
 
 to go
   ask one-of turtles [ ;scheduling ;select a random agent, and depending on breed evalaute with different objective functions N - 1 potential advisors + do-nothing option
-    let evaluation evaluation-of-alternatives breed ;the first **length my-existing-requests** values refer to the ObjFun when withdrawing a request, the others when sending a new request
-    let max_eval max evaluation
-    let max_eval_index position max_eval evaluation ;it's the index where ObjFun is max
-    let targets reduce sentence (list my-existing-requests my-potential-requests) ;first **length my-existing-requests** are the [who]_s of those that are to be removed 
-    let do-nothing obj-function breed alpha zeta ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
-    if max_eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
-      ifelse max_eval_index < outdegree [ ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
-        ask out-request-to item max_eval_index targets [die]
+    let eval evaluation breed ;the first **length my-current-advisors** values refer to the ObjFun when withdrawing a request, the others when sending a new request
+    let max-eval max eval
+    let max-eval-index position max-eval eval ;it's the index where ObjFun is max
+    let targets reduce sentence (list my-current-advisors my-potential-advisors) ;first **length my-current-advisors** are the [who]_s of those that are to be removed
+    let do-nothing objective-function breed ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
+    if max-eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
+      ifelse max-eval-index < outdegree
+      ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
+      [
+        ask out-request-to item max-eval-index targets [ die ]
       ]
-      [ ;send a request
-        create-request-to item max_eval_index targets
-      ]
+      ;send a request
+      [ create-request-to item max-eval-index targets ]
     ] ;end outer if statement (i.e., whether max_eval > do-nothing or not)
   ]
   layout-spring turtles requests 0.2 5 1 ;adjust spring layout at every tick
-  if count requests >= max-links [ ;stopping condition (can be set in the GUI)
-    stop
-  ]
+  if count requests >= max-links [ stop ] ;stopping condition (can be set in the GUI)
   tick
 end
 
-to-report evaluation-of-alternatives [breed-agent]
-  report reduce sentence (list map [agent-to-remove -> remove? agent-to-remove breed-agent] my-existing-requests (map [agent-to-add -> add? agent-to-add breed-agent] my-potential-requests))
+;;; reporters
+
+to-report evaluation [breed-agent]
+  report reduce sentence
+   (list map [ agent-to-remove -> utility-if-removed agent-to-remove breed-agent ] my-current-advisors
+    (map [ agent-to-add -> utility-if-added agent-to-add breed-agent ] my-potential-advisors))
 end
 
-to-report my-existing-requests ;sorting is needed
+to-report my-current-advisors ;sorting is needed
   report sort out-request-neighbors
 end
 
-to-report remove? [agent-to-remove breed-agent] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
-  ask out-request-to agent-to-remove [die]  
-  let val obj-function breed-agent alpha zeta
+to-report my-potential-advisors
+  report filter [agent -> not member? agent my-current-advisors] sort other turtles
+end
+
+to-report utility-if-removed [agent-to-remove breed-agent] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
+  ask out-request-to agent-to-remove [ die ]
+  let val objective-function breed-agent
   create-request-to agent-to-remove
   report val
 end
 
-to-report my-potential-requests
-  report filter [agent -> not member? agent my-existing-requests] sort other turtles
-end
-
-to-report add? [agent-to-add breed-agent] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
+to-report utility-if-added [agent-to-add breed-agent] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
   create-request-to agent-to-add
-  let val obj-function breed-agent alpha zeta
-  ask out-request-to agent-to-add [die]
+  let val objective-function breed-agent
+  ask out-request-to agent-to-add [ die ]
   report val
 end
 
-to-report obj-function [breed-agent shape-gamma scale-gamma]
-  ifelse breed-agent = networkers [
-    report outdegree * beta_outdeg_net + reciprocity * beta_rec_net + transitivity * beta_trans_net + random-gamma alpha zeta 
-  ]
-  [ ;if satisficer
-    report outdegree * beta_outdeg_sat + beta_hom1_sat * (homophily attr) + beta_attract_seniority * seniority_receiver + random-gamma alpha zeta
-  ]
+to-report objective-function [breed-agent]
+  let preferences ifelse-value breed-agent = networkers
+   [ beta_outdeg_net * outdegree + beta_rec_net * reciprocity + beta_trans_net * transitivity ]
+   [ beta_outdeg_sat * outdegree + beta_hom_sat * (homophily homophily-attribute) + beta_attract_seniority * seniority-advisors ]
+  report preferences + random-gamma alpha zeta
 end
 
-;network effects 
+;; network effects
 
 to-report outdegree
-  report count out-request-neighbors
+  report count my-out-requests
 end
 
 to-report reciprocity
   report length filter [id -> member? turtle id out-request-neighbors] [who] of in-request-neighbors
 end
 
+to-report transitivity
+  ifelse outdegree > 0
+  [
+    let neigh-of-neigh reduce sentence (map [ my-neigh -> [self] of [out-request-neighbors] of my-neigh ] my-current-advisors)
+    report length filter [agent -> member? agent my-current-advisors] neigh-of-neigh
+  ]
+  [ report 0 ]
+end
+
 to-report homophily [attribute]
   report count out-request-neighbors with [attribute = [attribute] of myself]
 end
 
-to-report seniority_receiver
+to-report seniority-advisors
   report sum [seniority] of out-request-neighbors
 end
-
-to-report transitivity 
-  ifelse outdegree > 0 [
-    let neigh_of_neigh reduce sentence (map[my_neigh -> [self] of [out-request-neighbors] of my_neigh] my-existing-requests)
-    report length filter [agent -> member? agent my-existing-requests] neigh_of_neigh
-  ]
-  [
-    report 0
-  ]
-end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-705
+551
 13
-1167
+1013
 476
 -1
 -1
@@ -146,10 +140,10 @@ ticks
 
 INPUTBOX
 11
+76
 61
-61
-121
-N
+136
+n-agents
 40.0
 1
 0
@@ -207,16 +201,16 @@ NIL
 0
 
 SLIDER
-71
-81
-243
-114
-number-networkers
-number-networkers
+72
+100
+244
+133
+prop-networkers
+prop-networkers
 0
-N
-11.0
 1
+0.5
+0.05
 1
 NIL
 HORIZONTAL
@@ -290,7 +284,7 @@ INPUTBOX
 241
 102
 301
-beta_hom1_sat
+beta_hom_sat
 0.4
 1
 0
@@ -313,7 +307,7 @@ MONITOR
 512
 65
 possible-number-links
-N * (N - 1)
+n-agents * (n-agents - 1)
 17
 1
 11
@@ -366,11 +360,86 @@ INPUTBOX
 377
 92
 437
-attr
+homophily-attribute
 gender
 1
 0
 String
+
+PLOT
+23
+541
+223
+691
+seniority (networkers)
+NIL
+NIL
+0.0
+15.0
+0.0
+15.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "histogram [seniority] of networkers"
+
+PLOT
+251
+544
+451
+694
+seniority (satisficers)
+NIL
+NIL
+0.0
+50.0
+0.0
+15.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -16777216 true "" "histogram [seniority] of satisficers"
+
+MONITOR
+81
+475
+179
+520
+# of females
+count turtles with [gender = 0]
+17
+1
+11
+
+MONITOR
+307
+476
+401
+521
+# of males
+count turtles with [gender = 1]
+17
+1
+11
+
+BUTTON
+103
+56
+213
+89
+iterate x 100
+repeat 100 [ go ]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

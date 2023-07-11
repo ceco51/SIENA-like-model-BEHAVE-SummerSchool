@@ -110,6 +110,21 @@ end
 to-report seniority-advisors
   report sum [seniority] of out-request-neighbors
 end
+
+;; summary statistics
+
+;to-report avg-geodesic
+;  let components nw:weak-component-clusters
+;  let sorted-comps sort-by [ [c1 c2] -> count c1 > count c2 ] components
+;  nw:set-context turtles with [member? self item 0 sorted-comps] requests
+;  let avg-geo nw:mean-path-length
+;  nw:set-context turtles requests
+;  report avg-geo
+;end
+
+to-report norm-btw-centrality
+  report map [val -> val / ((n-agents - 1) * (n-agents - 2))] [nw:betweenness-centrality] of turtles
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 551
@@ -221,7 +236,7 @@ INPUTBOX
 107
 228
 beta-outdeg-sat
--1.1
+-1.0
 1
 0
 Number
@@ -263,7 +278,7 @@ INPUTBOX
 274
 299
 beta-rec-net
-0.8
+0.75
 1
 0
 Number
@@ -274,7 +289,7 @@ INPUTBOX
 279
 372
 beta-trans-net
-0.35
+0.75
 1
 0
 Number
@@ -285,7 +300,7 @@ INPUTBOX
 102
 301
 beta-hom-sat
-0.4
+0.5
 1
 0
 Number
@@ -350,21 +365,10 @@ INPUTBOX
 132
 369
 beta-attract-seniority
-0.008
+0.005
 1
 0
 Number
-
-INPUTBOX
-10
-377
-92
-437
-homophily-attribute
-gender
-1
-0
-String
 
 PLOT
 23
@@ -440,6 +444,251 @@ NIL
 NIL
 NIL
 1
+
+MONITOR
+1229
+302
+1435
+347
+local clustering coefficient (median)
+median [nw:clustering-coefficient] of turtles
+3
+1
+11
+
+PLOT
+1493
+255
+1778
+405
+Local clustering coefficient (distribution)
+NIL
+NIL
+0.0
+1.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 0.1 1 -16777216 true "" "histogram [nw:clustering-coefficient] of turtles"
+
+PLOT
+1494
+72
+1778
+222
+Degree distribution
+NIL
+NIL
+0.0
+39.0
+0.0
+20.0
+false
+true
+"" ""
+PENS
+"in-degree" 1.0 1 -16777216 true "" "histogram [count my-in-requests] of turtles"
+"out-degree" 1.0 1 -5298144 true "" "histogram [count my-out-requests] of turtles"
+
+MONITOR
+1234
+100
+1407
+145
+in-degree (scaled variance)
+variance map count [my-in-requests] of turtles / mean map count [my-in-requests] of turtles
+3
+1
+11
+
+MONITOR
+1236
+157
+1406
+202
+out-degree (scaled variance)
+variance map count [my-out-requests] of turtles / mean map count [my-out-requests] of turtles
+3
+1
+11
+
+MONITOR
+1229
+442
+1339
+487
+# of components
+length map count nw:weak-component-clusters
+0
+1
+11
+
+MONITOR
+1359
+445
+1515
+490
+Size of largest component
+max map count nw:weak-component-clusters
+0
+1
+11
+
+MONITOR
+1232
+501
+1348
+546
+Avg. geodesic distance
+avg-geodesic
+3
+1
+11
+
+MONITOR
+1357
+500
+1461
+545
+# communities
+length nw:louvain-communities
+0
+1
+11
+
+MONITOR
+1473
+498
+1551
+543
+Modularity
+nw:modularity nw:louvain-communities
+3
+1
+11
+
+PLOT
+1488
+558
+1749
+708
+Betweenness centrality (distribution)
+NIL
+NIL
+0.0
+0.5
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 0.01 1 -16777216 true "" "histogram norm-btw-centrality"
+
+MONITOR
+1223
+609
+1433
+654
+Betweenness centrality (median)
+median norm-btw-centrality
+3
+1
+11
+
+TEXTBOX
+1292
+20
+1442
+38
+Summary statistics
+14
+0.0
+1
+
+TEXTBOX
+1077
+143
+1227
+161
+Degree distribution
+11
+0.0
+1
+
+TEXTBOX
+1082
+316
+1232
+334
+Clustering
+11
+0.0
+1
+
+TEXTBOX
+1085
+488
+1235
+506
+Connectivity
+11
+0.0
+1
+
+TEXTBOX
+1087
+623
+1237
+641
+Centralisation
+11
+0.0
+1
+
+PLOT
+1490
+721
+1816
+871
+# homophilous ties (distribution)
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"satisficers" 1.0 1 -1184463 true "" "histogram [homophily homophily-attribute] of satisficers"
+"networkers" 1.0 1 -10899396 true "" "histogram [homophily homophily-attribute] of networkers"
+
+MONITOR
+1235
+736
+1444
+781
+% homophilous ties
+(sum [homophily homophily-attribute] of turtles / count requests) * 100
+3
+1
+11
+
+INPUTBOX
+12
+387
+140
+447
+homophily-attribute
+gender
+1
+0
+String
 
 @#$#@#$#@
 ## WHAT IS IT?

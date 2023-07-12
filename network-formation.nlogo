@@ -91,13 +91,13 @@ to-report outdegree
 end
 
 to-report reciprocity
-  report length filter [id -> member? turtle id out-request-neighbors] [who] of in-request-neighbors
+  report length filter [id -> member? id out-request-neighbors] [end1] of my-in-requests
 end
 
 to-report transitivity
   ifelse outdegree > 0
   [
-    let neigh-of-neigh reduce sentence (map [ my-neigh -> [self] of [out-request-neighbors] of my-neigh ] my-current-advisors)
+    let neigh-of-neigh reduce sentence (map [ my-neigh -> [end2] of [my-out-requests] of my-neigh ] my-current-advisors)
     report length filter [agent -> member? agent my-current-advisors] neigh-of-neigh
   ]
   [ report 0 ]

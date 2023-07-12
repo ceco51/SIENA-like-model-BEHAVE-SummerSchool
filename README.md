@@ -21,8 +21,8 @@
 15. basically what happens in steps 9. to 14. is that the selected agent evaluates every possible 1-link modification of its own current out-neighborhood. To do this, these modified out-neighborhoods must first be formed and then evaluated. After evaluation, the marginal link is either destroyed or added again (re-store current neighborhood)
 16. calculate objective function of current out-neighborhood (of doing nothing, current "happiness")
 17. select the move maximizing objective function from possible 1-link modifications
-18. choose the index of the move that maximizes the objective function to find out which is the target agent of the move
-19. if utility/happiness from move max obj. funct. > from keeping current neighborhood
+18. choose the index of the move that maximizes the objective function from possible 1-link modifications to find out which is the target agent of the move
+19. if utility/happiness from move that maximizes the objective function from possible 1-link modifications > utility/happiness from keeping current neighborhood
 20. drop tie if the target agent is among current-advisors, add tie if is among potential-advisors
 21. t <- t + 1
 

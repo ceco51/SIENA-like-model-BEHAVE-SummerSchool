@@ -499,7 +499,7 @@ MONITOR
 1407
 145
 in-degree (scaled variance)
-variance map count [my-in-requests] of turtles / mean map count [my-in-requests] of turtles
+variance [count my-in-requests] of turtles / mean [count my-in-requests] of turtles
 3
 1
 11
@@ -510,7 +510,7 @@ MONITOR
 1406
 202
 out-degree (scaled variance)
-variance map count [my-out-requests] of turtles / mean map count [my-out-requests] of turtles
+variance [count my-out-requests] of turtles / mean [count my-out-requests] of turtles
 3
 1
 11
@@ -521,7 +521,7 @@ MONITOR
 1339
 487
 # of components
-length map count nw:weak-component-clusters
+length nw:weak-component-clusters
 0
 1
 11

@@ -80,7 +80,7 @@ end
 to-report objective-function [breed-agent]
   let preferences ifelse-value breed-agent = networkers
    [ beta-outdeg-net * outdegree + beta-rec-net * reciprocity + beta-trans-net * transitivity ]
-   [ beta-outdeg-sat * outdegree + beta-hom-sat * (homophily homophily-attribute) + beta-attract-seniority * seniority-advisors ]
+   [ beta-outdeg-sat * outdegree + beta-hom-sat * homophily + beta-attract-seniority * seniority-advisors ]
   report preferences + random-gamma alpha zeta
 end
 
@@ -103,8 +103,8 @@ to-report transitivity
   [ report 0 ]
 end
 
-to-report homophily [attribute]
-  report count out-request-neighbors with [attribute = [attribute] of myself]
+to-report homophily 
+  report count out-request-neighbors with [gender = [gender] of myself]
 end
 
 to-report seniority-advisors
@@ -665,8 +665,8 @@ true
 true
 "" ""
 PENS
-"satisficers" 1.0 1 -1184463 true "" "histogram [homophily homophily-attribute] of satisficers"
-"networkers" 1.0 1 -10899396 true "" "histogram [homophily homophily-attribute] of networkers"
+"satisficers" 1.0 1 -1184463 true "" "histogram [homophily] of satisficers"
+"networkers" 1.0 1 -10899396 true "" "histogram [homophily] of networkers"
 
 MONITOR
 1235
@@ -674,21 +674,11 @@ MONITOR
 1444
 781
 % homophilous ties
-(sum [homophily homophily-attribute] of turtles / count requests) * 100
+(sum [homophily] of turtles / count requests) * 100
 3
 1
 11
 
-INPUTBOX
-12
-387
-140
-447
-homophily-attribute
-gender
-1
-0
-String
 
 @#$#@#$#@
 ## WHAT IS IT?

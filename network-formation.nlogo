@@ -103,7 +103,7 @@ to-report transitivity
   [ report 0 ]
 end
 
-to-report homophily 
+to-report homophily
   report count out-request-neighbors with [gender = [gender] of myself]
 end
 
@@ -679,6 +679,16 @@ MONITOR
 1
 11
 
+MONITOR
+199
+729
+261
+774
+density
+count requests / (n-agents * (n-agents - 1))
+3
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?

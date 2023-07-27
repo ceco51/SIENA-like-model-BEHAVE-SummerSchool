@@ -17,7 +17,7 @@ to setup
   create-satisficers n-agents - count networkers [ set color yellow ]
   ask turtles [
     set gender one-of [0 1] ;can be uploaded from .csv file
-    set seniority random-poisson ifelse-value is-networker? self [10] [30]
+    set seniority random-poisson ifelse-value is-networker? self [12] [11]
     set shape ifelse-value gender = 0 ["circle"] ["square"]
     set size sqrt(seniority / 20)
     setxy random-xcor random-ycor
@@ -311,7 +311,7 @@ INPUTBOX
 362
 70
 max-links
-300.0
+297.0
 1
 0
 Number
@@ -451,7 +451,7 @@ MONITOR
 1435
 347
 local clustering coefficient (median)
-median [nw:clustering-coefficient] of turtles
+ifelse-value any? turtles with [is-number? nw:clustering-coefficient] [median [nw:clustering-coefficient] of turtles] [\"undefined\"]
 3
 1
 11
@@ -562,7 +562,7 @@ length nw:louvain-communities
 MONITOR
 1473
 498
-1551
+1573
 543
 Modularity
 nw:modularity nw:louvain-communities
@@ -686,6 +686,17 @@ MONITOR
 774
 density
 count requests / (n-agents * (n-agents - 1))
+3
+1
+11
+
+MONITOR
+1154
+366
+1488
+411
+local clustering coefficient (mean)
+ifelse-value any? turtles with [is-number? nw:clustering-coefficient] [mean [nw:clustering-coefficient] of turtles] [\"undefined\"]
 3
 1
 11
@@ -1032,10 +1043,54 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.2
+NetLogo 6.3.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="5" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="3000"/>
+    <metric>count turtles</metric>
+    <metric>count requests / (n-agents * (n-agents - 1))</metric>
+    <metric>variance [count my-in-requests] of turtles / mean [count my-in-requests] of turtles</metric>
+    <metric>variance [count my-out-requests] of turtles / mean [count my-out-requests] of turtles</metric>
+    <metric>ifelse-value any? turtles with [is-number? nw:clustering-coefficient] [median [nw:clustering-coefficient] of turtles] ["undefined"]</metric>
+    <metric>max map count nw:weak-component-clusters</metric>
+    <enumeratedValueSet variable="zeta">
+      <value value="2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-links">
+      <value value="297"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="alpha">
+      <value value="0.2"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="beta-outdeg-sat">
+      <value value="-1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="beta-rec-net">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="n-agents">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="beta-trans-net">
+      <value value="0.75"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="beta-outdeg-net">
+      <value value="-1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="beta-hom-sat">
+      <value value="0.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="beta-attract-seniority">
+      <value value="0.005"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="prop-networkers" first="0.05" step="0.05" last="0.95"/>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default

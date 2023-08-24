@@ -91,7 +91,8 @@ to-report outdegree
 end
 
 to-report reciprocity
-  report length filter [id -> member? id out-request-neighbors] [end1] of my-in-requests
+   let incoming-requests in-request-neighbors  
+   report count out-request-neighbors with [member? self incoming-requests]
 end
 
 to-report transitivity

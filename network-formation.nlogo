@@ -13,8 +13,8 @@ turtles-own [ ;common attributes of both types (we might just use one or two, it
 
 to setup
   clear-all
-  create-networkers round n-agents * prop-networkers [ set color green ]
-  create-satisficers n-agents - count networkers [ set color yellow ]
+  create-networkers round n-agents * prop-networkers [set color green]
+  create-satisficers n-agents - count networkers [set color yellow]
   ask turtles [
     set gender one-of [0 1] ;can be uploaded from .csv file
     set seniority random-poisson ifelse-value is-networker? self [12] [11]
@@ -27,16 +27,16 @@ end
 
 to go
   ask one-of turtles [ ;scheduling ;select a random agent, and depending on breed evalaute with different objective functions N - 1 potential advisors + do-nothing option
-    let eval evaluation breed ;the first **length my-current-advisors** values refer to the ObjFun when withdrawing a request, the others when sending a new request
+    let eval evaluation ;the first **length my-current-advisors** values refer to the ObjFun when withdrawing a request, the others when sending a new request
     let max-eval max eval
     let max-eval-index position max-eval eval ;it's the index where ObjFun is max
     let targets reduce sentence (list my-current-advisors my-potential-advisors) ;first **length my-current-advisors** are the [who]_s of those that are to be removed
-    let do-nothing objective-function breed ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
+    let do-nothing objective-function ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
     if max-eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
       ifelse max-eval-index < outdegree
       ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
       [
-        ask out-request-to item max-eval-index targets [ die ]
+        ask out-request-to item max-eval-index targets [die]
       ]
       ;send a request
       [ create-request-to item max-eval-index targets ]
@@ -49,10 +49,10 @@ end
 
 ;;; reporters
 
-to-report evaluation [breed-agent]
+to-report evaluation
   report reduce sentence
-   (list map [ agent-to-remove -> utility-if-removed agent-to-remove breed-agent ] my-current-advisors
-    (map [ agent-to-add -> utility-if-added agent-to-add breed-agent ] my-potential-advisors))
+   (list map [agent-to-remove -> utility-if-removed agent-to-remove] my-current-advisors
+    (map [agent-to-add -> utility-if-added agent-to-add] my-potential-advisors))
 end
 
 to-report my-current-advisors ;sorting is needed
@@ -63,24 +63,24 @@ to-report my-potential-advisors
   report filter [agent -> not member? agent my-current-advisors] sort other turtles
 end
 
-to-report utility-if-removed [agent-to-remove breed-agent] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
-  ask out-request-to agent-to-remove [ die ]
-  let val objective-function breed-agent
+to-report utility-if-removed [agent-to-remove] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
+  ask out-request-to agent-to-remove [die]
+  let val objective-function
   create-request-to agent-to-remove
   report val
 end
 
-to-report utility-if-added [agent-to-add breed-agent] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
+to-report utility-if-added [agent-to-add] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
   create-request-to agent-to-add
-  let val objective-function breed-agent
-  ask out-request-to agent-to-add [ die ]
+  let val objective-function
+  ask out-request-to agent-to-add [die]
   report val
 end
 
-to-report objective-function [breed-agent]
-  let preferences ifelse-value breed-agent = networkers
-   [ beta-outdeg-net * outdegree + beta-rec-net * reciprocity + beta-trans-net * transitivity ]
-   [ beta-outdeg-sat * outdegree + beta-hom-sat * homophily + beta-attract-seniority * seniority-advisors ]
+to-report objective-function
+  let preferences ifelse-value is-networker? self
+   [beta-outdeg-net * outdegree + beta-rec-net * reciprocity + beta-trans-net * transitivity]
+   [beta-outdeg-sat * outdegree + beta-hom-sat * homophily + beta-attract-seniority * seniority-advisors]
   report preferences + random-gamma alpha zeta
 end
 

@@ -26,33 +26,37 @@ to setup
 end
 
 to go
-  ask one-of turtles [ ;scheduling ;select a random agent, and depending on breed evalaute with different objective functions N - 1 potential advisors + do-nothing option
-    let eval evaluation ;the first **length my-current-advisors** values refer to the ObjFun when withdrawing a request, the others when sending a new request
-    let max-eval max eval
-    let max-eval-index position max-eval eval ;it's the index where ObjFun is max
-    let targets reduce sentence (list my-current-advisors my-potential-advisors) ;first **length my-current-advisors** are the [who]_s of those that are to be removed
-    let do-nothing objective-function ;evaluate ObjFun on current neighborhood ;alpha zeta are location and scale of Gamma distr. shocks (from monitor widgets)
-    if max-eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
-      ifelse max-eval-index < outdegree
-      ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
-      [
-        ask out-request-to item max-eval-index targets [die]
-      ]
-      ;send a request
-      [ create-request-to item max-eval-index targets ]
-    ] ;end outer if statement (i.e., whether max_eval > do-nothing or not)
+  ask one-of turtles [
+    evaluate-and-change-links
   ]
   layout-spring turtles requests 0.2 5 1 ;adjust spring layout at every tick
-  if count requests >= max-links [ stop ] ;stopping condition (can be set in the GUI)
+  if count requests >= max-links [stop] ;stopping condition (can be set in the GUI)
   tick
+end
+
+to evaluate-and-change-links
+  let eval evaluation ;the first **length my-current-advisors** values refer to the ObjFun when withdrawing a request, the others when sending a new request
+  let max-eval max eval
+  let max-eval-index position max-eval eval ;it's the index where ObjFun is max
+  let targets reduce sentence (list my-current-advisors my-potential-advisors) ;first **length my-current-advisors** are those that are to be removed
+  let do-nothing objective-function ;evaluate ObjFun on current neighborhood
+  if max-eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
+    ifelse max-eval-index < outdegree
+    ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
+    [
+      ask out-request-to item max-eval-index targets [die]
+    ]
+    ;send a request
+    [create-request-to item max-eval-index targets]
+  ] ;do nothing
 end
 
 ;;; reporters
 
 to-report evaluation
-  report reduce sentence
-   (list map [agent-to-remove -> utility-if-removed agent-to-remove] my-current-advisors
-    (map [agent-to-add -> utility-if-added agent-to-add] my-potential-advisors))
+  let utility-removing map [agent-to-remove -> utility-if-removed agent-to-remove] my-current-advisors
+  let utility-adding map [agent-to-add -> utility-if-added agent-to-add] my-potential-advisors
+  report reduce sentence (list utility-removing utility-adding)
 end
 
 to-report my-current-advisors ;sorting is needed

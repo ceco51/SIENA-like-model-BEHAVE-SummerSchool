@@ -64,7 +64,8 @@ to-report my-current-advisors ;sorting is needed
 end
 
 to-report my-potential-advisors
-  report filter [agent -> not member? agent my-current-advisors] sort other turtles
+  let existing-adv my-current-advisors
+  report sort other turtles with [not member? self existing-adv]
 end
 
 to-report utility-if-removed [agent-to-remove] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
@@ -95,17 +96,18 @@ to-report outdegree
 end
 
 to-report reciprocity
-   let incoming-requests in-request-neighbors  
-   report count out-request-neighbors with [member? self incoming-requests]
+  let incoming-requests in-request-neighbors  
+  report count out-request-neighbors with [member? self incoming-requests]
 end
 
 to-report transitivity
+  let out-neigh out-request-neighbors
   ifelse outdegree > 0
   [
-    let neigh-of-neigh reduce sentence (map [ my-neigh -> [end2] of [my-out-requests] of my-neigh ] my-current-advisors)
-    report length filter [agent -> member? agent my-current-advisors] neigh-of-neigh
+    let neigh-of-neigh reduce sentence map [i -> [self] of i] [out-request-neighbors] of out-neigh
+    report length filter [agent -> member? agent out-neigh] neigh-of-neigh
   ]
-  [ report 0 ]
+  [report 0]
 end
 
 to-report homophily
@@ -115,17 +117,6 @@ end
 to-report seniority-advisors
   report sum [seniority] of out-request-neighbors
 end
-
-;; summary statistics
-
-;to-report avg-geodesic
-;  let components nw:weak-component-clusters
-;  let sorted-comps sort-by [ [c1 c2] -> count c1 > count c2 ] components
-;  nw:set-context turtles with [member? self item 0 sorted-comps] requests
-;  let avg-geo nw:mean-path-length
-;  nw:set-context turtles requests
-;  report avg-geo
-;end
 
 to-report norm-btw-centrality
   report map [val -> val / ((n-agents - 1) * (n-agents - 2))] [nw:betweenness-centrality] of turtles

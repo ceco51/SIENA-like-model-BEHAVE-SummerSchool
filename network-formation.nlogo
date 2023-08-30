@@ -572,17 +572,6 @@ max map count nw:weak-component-clusters
 11
 
 MONITOR
-1232
-501
-1348
-546
-Avg. geodesic distance
-avg-geodesic
-3
-1
-11
-
-MONITOR
 1357
 500
 1461

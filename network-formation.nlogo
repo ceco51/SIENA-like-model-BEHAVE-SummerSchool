@@ -13,8 +13,18 @@ turtles-own [ ;common attributes of both types (we might just use one or two, it
 
 to setup
   clear-all
+  ifelse import? 
+  [nw:load-graphml "nodes.graphml"] ;same directory as .nlogo model
+  [create-agents set-attributes]
+  reset-ticks
+end
+
+to create-agents
   create-networkers round n-agents * prop-networkers [set color green]
   create-satisficers n-agents - count networkers [set color yellow]
+end
+
+to set-attributes
   ask turtles [
     set gender one-of [0 1] ;can be uploaded from .csv file
     set seniority random-poisson ifelse-value is-networker? self [12] [11]
@@ -22,7 +32,6 @@ to setup
     set size sqrt(seniority / 20)
     setxy random-xcor random-ycor
   ]
-  reset-ticks
 end
 
 to go
@@ -53,12 +62,6 @@ end
 
 ;;; reporters
 
-to-report evaluation
-  let utility-removing map [agent-to-remove -> utility-if-removed agent-to-remove] my-current-advisors
-  let utility-adding map [agent-to-add -> utility-if-added agent-to-add] my-potential-advisors
-  report reduce sentence (list utility-removing utility-adding)
-end
-
 to-report my-current-advisors ;sorting is needed
   report sort out-request-neighbors
 end
@@ -66,6 +69,12 @@ end
 to-report my-potential-advisors
   let existing-adv my-current-advisors
   report sort other turtles with [not member? self existing-adv]
+end
+
+to-report evaluation
+  let utility-removing map [agent-to-remove -> utility-if-removed agent-to-remove] my-current-advisors
+  let utility-adding map [agent-to-add -> utility-if-added agent-to-add] my-potential-advisors
+  report reduce sentence (list utility-removing utility-adding)
 end
 
 to-report utility-if-removed [agent-to-remove] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
@@ -333,6 +342,17 @@ TEXTBOX
 0.0
 1
 
+SWITCH
+237
+81
+340
+114
+import?
+import?
+1
+1
+-1000
+
 INPUTBOX
 355
 175
@@ -354,6 +374,24 @@ zeta
 1
 0
 Number
+
+BUTTON
+356
+330
+407
+300
+export-graphml
+nw:save-graphml(word random 10000 "output.graphml")
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
 
 INPUTBOX
 9

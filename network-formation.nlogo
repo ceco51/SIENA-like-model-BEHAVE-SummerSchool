@@ -1,13 +1,12 @@
-extensions [nw] ;network extension
+extensions [nw]
 
 directed-link-breed [requests request] ;advice requests
 
-;types of agents, will have different objective functions (names need to be changed)
 breed [satisficers satisficer]
 breed [networkers networker]
 
-turtles-own [ ;common attributes of both types (we might just use one or two, it depends) ;we might also use breed-own, with breed-specific attributes
-  gender      ;if using fake target network, can be uploaded from .csv file ("calibrated" from fake data)
+turtles-own [ 
+  gender    
   seniority
 ]
 
@@ -26,7 +25,7 @@ end
 
 to set-attributes
   ask turtles [
-    set gender one-of [0 1] ;can be uploaded from .csv file
+    set gender one-of [0 1]
     set seniority random-poisson ifelse-value is-networker? self [12] [11]
     set shape ifelse-value gender = 0 ["circle"] ["square"]
     set size sqrt(seniority / 20)
@@ -38,31 +37,25 @@ to go
   ask one-of turtles [
     evaluate-and-change-links
   ]
-  layout-spring turtles requests 0.2 5 1 ;adjust spring layout at every tick
-  if count requests >= max-links [stop] ;stopping condition (can be set in the GUI)
+  layout-spring turtles requests 0.2 5 1
+  if count requests >= max-links [stop]
   tick
 end
 
 to evaluate-and-change-links
-  let eval evaluation ;the first **length my-current-advisors** values refer to the ObjFun when withdrawing a request, the others when sending a new request
+  let eval evaluation ;the first **length my-current-advisors** values refer to the ObjFun when deleting a request, the others when sending a new request
   let max-eval max eval
-  let max-eval-index position max-eval eval ;it's the index where ObjFun is max
-  let targets reduce sentence (list my-current-advisors my-potential-advisors) ;first **length my-current-advisors** are those that are to be removed
+  let max-eval-index position max-eval eval
+  let targets sentence my-current-advisors my-potential-advisors
   let do-nothing objective-function ;evaluate ObjFun on current neighborhood
   if max-eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
-    ifelse max-eval-index < outdegree
-    ;remove ;0 < 0 false for cases in which I do not have any out-going link (at the beginning) --> I do not remove
-    [
-      ask out-request-to item max-eval-index targets [die]
-    ]
-    ;send a request
+    ifelse max-eval-index < outdegree ;we are in the "removing" part of the list
+    [ask out-request-to item max-eval-index targets [die]]
     [create-request-to item max-eval-index targets]
-  ] ;do nothing
+  ]
 end
 
-;;; reporters
-
-to-report my-current-advisors ;sorting is needed
+to-report my-current-advisors
   report sort out-request-neighbors
 end
 
@@ -74,7 +67,7 @@ end
 to-report evaluation
   let utility-removing map [agent-to-remove -> utility-if-removed agent-to-remove] my-current-advisors
   let utility-adding map [agent-to-add -> utility-if-added agent-to-add] my-potential-advisors
-  report reduce sentence (list utility-removing utility-adding)
+  report sentence utility-removing utility-adding
 end
 
 to-report utility-if-removed [agent-to-remove] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
@@ -130,6 +123,7 @@ end
 to-report norm-btw-centrality
   report map [val -> val / ((n-agents - 1) * (n-agents - 2))] [nw:betweenness-centrality] of turtles
 end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 551

@@ -8,6 +8,8 @@ breed [networkers networker]
 turtles-own [ 
   gender    
   seniority
+  current-advisors
+  potential-advisors
 ]
 
 to setup
@@ -19,13 +21,14 @@ to setup
 end
 
 to create-agents
-  create-networkers round n-agents * prop-networkers [set color green]
-  create-satisficers n-agents - count networkers [set color yellow]
+  create-networkers round n-agents * prop-networkers
+  create-satisficers n-agents - count networkers
 end
 
 to set-attributes
   ask turtles [
     set gender one-of [0 1]
+    set color ifelse-value is-networker? self [green] [yellow]
     set seniority random-poisson ifelse-value is-networker? self [12] [11]
     set shape ifelse-value gender = 0 ["circle"] ["square"]
     set size sqrt(seniority / 20)
@@ -35,49 +38,43 @@ end
 
 to go
   ask one-of turtles [
-    evaluate-and-change-links
+    set current-advisors sort out-request-neighbors
+    let everyone-else sort other turtles
+    set potential-advisors filter [colleague -> not member? colleague current-advisors] everyone-else
+    evaluate-and-change-requests
   ]
   layout-spring turtles requests 0.2 5 1
   if count requests >= max-links [stop]
   tick
 end
 
-to evaluate-and-change-links
-  let eval evaluation ;the first **length my-current-advisors** values refer to the ObjFun when deleting a request, the others when sending a new request
+to evaluate-and-change-requests
+  let eval evaluation
   let max-eval max eval
   let max-eval-index position max-eval eval
-  let targets sentence my-current-advisors my-potential-advisors
+  let targets sentence current-advisors potential-advisors
   let do-nothing objective-function ;evaluate ObjFun on current neighborhood
-  if max-eval > do-nothing [ ;change personal network only if utility from either removing or adding a link > do-nothing
+  if max-eval > do-nothing [
     ifelse max-eval-index < outdegree ;we are in the "removing" part of the list
     [ask out-request-to item max-eval-index targets [die]]
     [create-request-to item max-eval-index targets]
   ]
 end
 
-to-report my-current-advisors
-  report sort out-request-neighbors
-end
-
-to-report my-potential-advisors
-  let existing-adv my-current-advisors
-  report sort other turtles with [not member? self existing-adv]
-end
-
 to-report evaluation
-  let utility-removing map [agent-to-remove -> utility-if-removed agent-to-remove] my-current-advisors
-  let utility-adding map [agent-to-add -> utility-if-added agent-to-add] my-potential-advisors
+  let utility-removing map [agent-to-remove -> utility-if-removed agent-to-remove] current-advisors
+  let utility-adding map [agent-to-add -> utility-if-added agent-to-add] potential-advisors
   report sentence utility-removing utility-adding
 end
 
-to-report utility-if-removed [agent-to-remove] ;remove already existing request, evaluate obj function on new neighborhood, then re-add request, report evaluation in list that is built by map
+to-report utility-if-removed [agent-to-remove]
   ask out-request-to agent-to-remove [die]
   let val objective-function
   create-request-to agent-to-remove
   report val
 end
 
-to-report utility-if-added [agent-to-add] ;add a potentially new request, evaluate obj function on new neighborhood, then remove request, report evaluation in list that is built by map
+to-report utility-if-added [agent-to-add]
   create-request-to agent-to-add
   let val objective-function
   ask out-request-to agent-to-add [die]
@@ -91,7 +88,7 @@ to-report objective-function
   report preferences + random-gamma alpha zeta
 end
 
-;; network effects
+;network effects
 
 to-report outdegree
   report count my-out-requests
@@ -103,11 +100,11 @@ to-report reciprocity
 end
 
 to-report transitivity
-  let out-neigh out-request-neighbors
   ifelse outdegree > 0
   [
-    let neigh-of-neigh reduce sentence map [i -> [self] of i] [out-request-neighbors] of out-neigh
-    report length filter [agent -> member? agent out-neigh] neigh-of-neigh
+    let out-neigh out-request-neighbors
+    let neigh-of-neigh reduce sentence map [colleague -> [self] of colleague] [out-request-neighbors] of out-neigh
+    report length filter [colleague -> member? colleague out-neigh] neigh-of-neigh
   ]
   [report 0]
 end
@@ -121,7 +118,7 @@ to-report seniority-advisors
 end
 
 to-report norm-btw-centrality
-  report map [val -> val / ((n-agents - 1) * (n-agents - 2))] [nw:betweenness-centrality] of turtles
+  report map [val -> val / ((count turtles - 1) * (count turtles - 2))] [nw:betweenness-centrality] of turtles
 end
 
 @#$#@#$#@
@@ -321,7 +318,7 @@ MONITOR
 512
 65
 possible-number-links
-n-agents * (n-agents - 1)
+count turtles * (count turtles - 1)
 17
 1
 11
@@ -702,7 +699,7 @@ MONITOR
 261
 774
 density
-count requests / (n-agents * (n-agents - 1))
+count requests / (count turtles * (count turtles - 1))
 3
 1
 11

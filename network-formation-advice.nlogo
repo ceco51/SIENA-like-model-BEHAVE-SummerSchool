@@ -56,7 +56,7 @@ to evaluate-scenarios-and-choose
   let potential-utilities evaluation
   let best-utility max potential-utilities
   let best-utility-index position best-utility potential-utilities
-  let current-utility objective-function
+  let current-utility utility-function
   if best-utility > current-utility [
     let targets sentence current-advisors potential-advisors
     ifelse best-utility-index < length current-advisors ;we are in the "removing" part of the list
@@ -77,19 +77,19 @@ end
 
 to-report utility-when-removing [agent-to-remove]
   ask out-request-to agent-to-remove [die]
-  let val objective-function
+  let val utility-function
   create-request-to agent-to-remove
   report val
 end
 
 to-report utility-when-adding [agent-to-add]
   create-request-to agent-to-add
-  let val objective-function
+  let val utility-function
   ask out-request-to agent-to-add [die]
   report val
 end
 
-to-report objective-function
+to-report utility-function
   let preferences ifelse-value is-networker? self
    [beta-outdeg-net * outdegree + beta-rec-net * reciprocity + beta-trans-net * transitivity]
    [beta-outdeg-sat * outdegree + beta-hom-sat * homophily + beta-attract-seniority * seniority-advisors]

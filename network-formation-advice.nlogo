@@ -44,7 +44,7 @@ end
 to go
   ask one-of turtles [
     set current-advisors [ self ] of out-request-neighbors
-    set potential-advisors [ self ] of other turtles with [ not member? self [ current-advisors ] of myself ]
+    set potential-advisors [ self ] of other turtles who-are-not out-request-neighbors
     evaluate-scenarios-and-choose
   ]
   layout-spring turtles requests 0.2 5 1
@@ -1079,7 +1079,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.3.0
+NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

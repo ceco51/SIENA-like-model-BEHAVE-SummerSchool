@@ -55,9 +55,9 @@ end
 to evaluate-scenarios-and-choose
   let potential-utilities evaluation
   let best-utility max potential-utilities
-  let best-utility-index position best-utility potential-utilities
   let current-utility utility-function
   if best-utility > current-utility [
+    let best-utility-index position best-utility potential-utilities
     let targets sentence current-advisors potential-advisors
     ifelse best-utility-index < length current-advisors ;we are in the "removing" part of the list
     [

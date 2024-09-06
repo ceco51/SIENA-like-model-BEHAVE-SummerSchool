@@ -8,8 +8,6 @@ breed [ satisficers satisficer ]
 turtles-own [
   gender
   seniority
-  current-advisors
-  potential-advisors
 ]
 
 
@@ -42,18 +40,21 @@ to set-attributes
 end
 
 to go
-  ask one-of turtles [
-    set current-advisors [ self ] of out-request-neighbors
-    set potential-advisors [ self ] of other turtles who-are-not out-request-neighbors
-    evaluate-scenarios-and-choose
-  ]
+  ask one-of turtles [ evaluate-scenarios-and-choose ]
   layout-spring turtles requests 0.2 5 1
   if count requests >= max-links [ stop ]
   tick
 end
 
 to evaluate-scenarios-and-choose
-  let potential-utilities evaluation
+
+  let current-advisors [ self ] of out-request-neighbors
+  let potential-advisors [ self ] of other turtles who-are-not out-request-neighbors
+  let potential-utilities (sentence
+    map [agent-to-remove -> utility-when-removing agent-to-remove] current-advisors
+    map [agent-to-add -> utility-when-adding agent-to-add] potential-advisors
+  )
+
   let best-utility max potential-utilities
   let current-utility utility-function
   if best-utility > current-utility [
@@ -67,12 +68,6 @@ to evaluate-scenarios-and-choose
       create-request-to item best-utility-index targets
     ]
   ]
-end
-
-to-report evaluation
-  let utility-removing map [agent-to-remove -> utility-when-removing agent-to-remove] current-advisors
-  let utility-adding map [agent-to-add -> utility-when-adding agent-to-add] potential-advisors
-  report sentence utility-removing utility-adding
 end
 
 to-report utility-when-removing [agent-to-remove]

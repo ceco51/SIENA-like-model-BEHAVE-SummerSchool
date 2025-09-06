@@ -39,7 +39,7 @@ to set-attributes
 end
 
 to go
-  if count requests >= max-links [ stop ]
+  if count requests >= max-links or ticks >= 50000 [ stop ]
   ask one-of turtles [ evaluate-scenarios-and-choose ]
   layout-spring turtles requests 0.2 5 1
   tick
@@ -120,13 +120,13 @@ to-report norm-btw-centrality
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-551
-13
-1013
-476
+511
+10
+929
+429
 -1
 -1
-13.76
+12.42424242424243
 1
 10
 1
@@ -147,10 +147,10 @@ ticks
 30.0
 
 INPUTBOX
-23
-90
-83
-150
+14
+100
+74
+160
 n-agents
 40.0
 1
@@ -192,15 +192,15 @@ NIL
 0
 
 SLIDER
-114
-113
-286
-146
+83
+125
+255
+158
 prop-networkers
 prop-networkers
 0
 1
-0.5
+0.0
 0.05
 1
 NIL
@@ -282,10 +282,10 @@ beta-hom-sat
 Number
 
 INPUTBOX
-310
-96
-404
-156
+267
+99
+361
+159
 max-links
 297.0
 1
@@ -293,10 +293,10 @@ max-links
 Number
 
 MONITOR
-378
-500
-509
-545
+350
+465
+481
+510
 possible-number-links
 count turtles * (count turtles - 1)
 17
@@ -320,7 +320,7 @@ SWITCH
 69
 import?
 import?
-0
+1
 1
 -1000
 
@@ -375,10 +375,10 @@ beta-attract-seniority
 Number
 
 PLOT
-562
-495
-762
-645
+506
+444
+706
+594
 seniority (networkers)
 NIL
 NIL
@@ -393,10 +393,10 @@ PENS
 "default" 1.0 1 -16777216 true "" "histogram [seniority] of networkers"
 
 PLOT
-790
-498
-990
-648
+734
+447
+934
+597
 seniority (satisficers)
 NIL
 NIL
@@ -411,10 +411,10 @@ PENS
 "default" 1.0 1 -16777216 true "" "histogram [seniority] of satisficers"
 
 MONITOR
-35
-499
-133
-544
+7
+464
+105
+509
 # of females
 count turtles with [gender = 0]
 17
@@ -422,10 +422,10 @@ count turtles with [gender = 0]
 11
 
 MONITOR
-261
-500
-355
-545
+233
+465
+327
+510
 # of males
 count turtles with [gender = 1]
 17
@@ -433,10 +433,10 @@ count turtles with [gender = 1]
 11
 
 MONITOR
-1229
-302
-1435
-347
+1108
+292
+1314
+337
 local clustering coefficient (median)
 ifelse-value any? turtles with [is-number? nw:clustering-coefficient] [median [nw:clustering-coefficient] of turtles] [\"undefined\"]
 3
@@ -444,10 +444,10 @@ ifelse-value any? turtles with [is-number? nw:clustering-coefficient] [median [n
 11
 
 PLOT
-1493
-255
-1778
-405
+1372
+245
+1657
+395
 Local clustering coefficient (distribution)
 NIL
 NIL
@@ -462,10 +462,10 @@ PENS
 "default" 0.1 1 -16777216 true "" "histogram [nw:clustering-coefficient] of turtles"
 
 PLOT
-1494
-72
-1778
-222
+1373
+62
+1657
+212
 Degree distribution
 NIL
 NIL
@@ -481,10 +481,10 @@ PENS
 "out-degree" 1.0 1 -5298144 true "" "histogram [count my-out-requests] of turtles"
 
 MONITOR
-1234
-100
-1407
-145
+1113
+90
+1286
+135
 in-degree (scaled variance)
 variance [count my-in-requests] of turtles / mean [count my-in-requests] of turtles
 3
@@ -492,10 +492,10 @@ variance [count my-in-requests] of turtles / mean [count my-in-requests] of turt
 11
 
 MONITOR
-1236
-157
-1406
-202
+1115
+147
+1285
+192
 out-degree (scaled variance)
 variance [count my-out-requests] of turtles / mean [count my-out-requests] of turtles
 3
@@ -503,10 +503,10 @@ variance [count my-out-requests] of turtles / mean [count my-out-requests] of tu
 11
 
 MONITOR
-1229
-442
-1339
-487
+1108
+432
+1218
+477
 # of components
 length nw:weak-component-clusters
 0
@@ -514,10 +514,10 @@ length nw:weak-component-clusters
 11
 
 MONITOR
-1359
-445
-1515
-490
+1238
+435
+1394
+480
 Size of largest component
 max map count nw:weak-component-clusters
 0
@@ -525,10 +525,10 @@ max map count nw:weak-component-clusters
 11
 
 MONITOR
-1357
-500
-1461
-545
+1236
+490
+1340
+535
 # communities
 length nw:louvain-communities
 0
@@ -536,10 +536,10 @@ length nw:louvain-communities
 11
 
 MONITOR
-1473
-498
-1573
-543
+1352
+488
+1452
+533
 Modularity
 nw:modularity nw:louvain-communities
 3
@@ -547,10 +547,10 @@ nw:modularity nw:louvain-communities
 11
 
 PLOT
-1488
-558
-1749
-708
+1367
+548
+1628
+698
 Betweenness centrality (distribution)
 NIL
 NIL
@@ -565,10 +565,10 @@ PENS
 "default" 0.01 1 -16777216 true "" "histogram norm-btw-centrality"
 
 MONITOR
-1223
-609
-1433
-654
+1102
+599
+1312
+644
 Betweenness centrality (median)
 median norm-btw-centrality
 3
@@ -576,60 +576,60 @@ median norm-btw-centrality
 11
 
 TEXTBOX
-1292
-20
-1442
-38
+1171
+10
+1321
+28
 Summary statistics
 14
 0.0
 1
 
 TEXTBOX
-1077
-143
-1227
-161
+956
+133
+1106
+151
 Degree distribution
 11
 0.0
 1
 
 TEXTBOX
-1082
-316
-1232
-334
+961
+306
+1111
+324
 Clustering
 11
 0.0
 1
 
 TEXTBOX
-1085
-488
-1235
-506
+964
+478
+1114
+496
 Connectivity
 11
 0.0
 1
 
 TEXTBOX
-1087
-623
-1237
-641
+966
+613
+1116
+631
 Centralisation
 11
 0.0
 1
 
 PLOT
-1490
-721
-1816
-871
+1369
+711
+1695
+861
 # homophilous ties (distribution)
 NIL
 NIL
@@ -645,10 +645,10 @@ PENS
 "networkers" 1.0 1 -10899396 true "" "histogram [homophily] of networkers"
 
 MONITOR
-1235
-736
-1444
-781
+1114
+726
+1323
+771
 % homophilous ties
 (sum [homophily] of turtles / count requests) * 100
 3
@@ -656,10 +656,10 @@ MONITOR
 11
 
 MONITOR
-164
-501
-226
-546
+136
+466
+198
+511
 density
 count requests / (count turtles * (count turtles - 1))
 3
@@ -667,10 +667,10 @@ count requests / (count turtles * (count turtles - 1))
 11
 
 MONITOR
-1228
-361
-1405
-406
+1107
+351
+1284
+396
 local clustering coefficient (mean)
 ifelse-value any? turtles with [is-number? nw:clustering-coefficient] [mean [nw:clustering-coefficient] of turtles] [\"undefined\"]
 3

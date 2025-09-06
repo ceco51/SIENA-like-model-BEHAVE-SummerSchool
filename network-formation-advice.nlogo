@@ -40,9 +40,9 @@ to set-attributes
 end
 
 to go
+  if count requests >= max-links [ stop ]
   ask one-of turtles [ evaluate-scenarios-and-choose ]
   layout-spring turtles requests 0.2 5 1
-  if count requests >= max-links [ stop ]
   tick
 end
 

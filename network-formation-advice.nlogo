@@ -10,7 +10,6 @@ turtles-own [
   seniority
 ]
 
-
 to setup
   clear-all
   ifelse import?
@@ -176,28 +175,11 @@ NIL
 1
 
 BUTTON
-87
+84
 34
-150
+153
 67
-step
 go
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-160
-35
-229
-68
-iterate
 go
 T
 1
@@ -332,13 +314,13 @@ TEXTBOX
 1
 
 SWITCH
-457
-38
-547
-71
+268
+36
+358
+69
 import?
 import?
-1
+0
 1
 -1000
 
@@ -365,10 +347,10 @@ zeta
 Number
 
 BUTTON
-355
-37
-449
-70
+166
+35
+260
+68
 export-graphml
 nw:save-graphml(word random 10000 \"output.graphml\")
 NIL
@@ -449,23 +431,6 @@ count turtles with [gender = 1]
 17
 1
 11
-
-BUTTON
-238
-36
-348
-69
-iterate x 100
-repeat 100 [ go ]
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
 
 MONITOR
 1229
